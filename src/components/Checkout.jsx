@@ -7,6 +7,7 @@ import UserProgressContext from "../store/UserProgressContext";
 import Modal from "./UI/Modal";
 import useHttp from "../hooks/useHttp";
 import Error from "./UI/Error";
+import { useActionState } from "react";
 
 const requestConfig = {
   method: "POST",
@@ -35,9 +36,7 @@ export default function Checkout({}) {
     userProgressCtx.hideCheckout();
   }
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const fd = new FormData(event.target);
+  function handleCheckout(prevState, fd) {
     const customerData = Object.fromEntries(fd.entries());
 
     sendRequest(
@@ -55,6 +54,11 @@ export default function Checkout({}) {
     cartCtx.clearItem();
     clearData();
   }
+
+  const [formState, formAction, isSending] = useActionState(
+    handleCheckout,
+    null
+  );
 
   let actions = (
     <>
@@ -98,7 +102,7 @@ export default function Checkout({}) {
       open={userProgressCtx.progress === "checkout"}
       onClose={handleCloseCheckout}
     >
-      <form onSubmit={handleSubmit}>
+      <form action={formAction}>
         <h2>Checkout</h2>
         <p>Total Amount :{currencyFormatter.format(cartTotal)}</p>
         <Input label="Full Name" id="name" type="text" />
